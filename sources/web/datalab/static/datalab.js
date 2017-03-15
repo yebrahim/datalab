@@ -1220,6 +1220,28 @@ function initializeNotebookApplication(ipy, notebook, events, dialog, utils) {
     });
 
     updateNavigation();
+
+    function setRulers(color, column, lineStyle) {
+      require(['notebook/js/codecell', 'codemirror/addon/display/rulers'], function(codecell) {
+        // Apply when new cells are created
+        rulers = [{
+          color: '#666',
+          column: 80,
+          lineStyle: 'dashed'
+        }];
+
+        codecell.CodeCell.options_default.cm_config.rulers = rulers;
+        // Apply to existing cells
+        Jupyter.notebook.get_cells().forEach(function (cell) {
+          if (cell instanceof codecell.CodeCell) {
+              cell.code_mirror.setOption('rulers', rulers);
+          }
+        });
+      });
+    }
+
+    setRulers('#666', 80, 'dashed');
+
   });
 
   events.on('open_with_text.Pager', function(e, payload) {
