@@ -23,22 +23,22 @@ function shouldShimWebsockets() {
 
 // Override WebSocket
 (function() {
-    if (!window.io) {
-	// If socket.io was not loaded into the page, then do not override the existing
-	// WebSocket functionality.
-	return;
-    }
+  if (!window.io) {
+    // If socket.io was not loaded into the page, then do not override the existing
+    // WebSocket functionality.
+    return;
+  }
 
-    function WebSocketShim(url) {
-	var self = this;
-	this._url = url;
-	this.readyState = WebSocketShim.CLOSED;
+  function WebSocketShim(url) {
+    var self = this;
+    this._url = url;
+    this.readyState = WebSocketShim.CLOSED;
 
-	var socketUri = location.protocol + '//' + location.host + '/session';
-	var socketOptions = {
-	    upgrade: false,
-	    multiplex: false
-	};
+    var socketUri = location.protocol + '//' + location.host + '/session';
+    var socketOptions = {
+        upgrade: false,
+        multiplex: false
+    };
 
 	function errorHandler() {
 	    if (self.onerror) {
@@ -85,16 +85,16 @@ function shouldShimWebsockets() {
 	onmessage: null,
 	onerror: null,
 
-	send: function(data) {
-	    if (this.readyState != WebSocketShim.OPEN) {
-		throw new Error('WebSocket is not yet opened');
-	    }
-	    this._socket.emit('data', { data: data });
-	},
+    send: function(data) {
+        if (this.readyState != WebSocketShim.OPEN) {
+      throw new Error('WebSocket is not yet opened');
+        }
+        this._socket.emit('data', { data: data });
+    },
 
-	close: function() {
-	    if (this.readyState == WebSocketShim.OPEN) {
-		this.readyState = WebSocketShim.CLOSED;
+    close: function() {
+        if (this.readyState == WebSocketShim.OPEN) {
+      this.readyState = WebSocketShim.CLOSED;
 
 		this._socket.emit('stop', { url: this._url });
 		this._socket.close();
@@ -1221,26 +1221,13 @@ function initializeNotebookApplication(ipy, notebook, events, dialog, utils) {
 
     updateNavigation();
 
-    function setRulers(color, column, lineStyle) {
-      require(['notebook/js/codecell', 'codemirror/addon/display/rulers'], function(codecell) {
-        // Apply when new cells are created
-        rulers = [{
-          color: '#666',
-          column: 80,
-          lineStyle: 'dashed'
-        }];
-
-        codecell.CodeCell.options_default.cm_config.rulers = rulers;
-        // Apply to existing cells
-        Jupyter.notebook.get_cells().forEach(function (cell) {
-          if (cell instanceof codecell.CodeCell) {
-              cell.code_mirror.setOption('rulers', rulers);
-          }
-        });
+    require(['/static/settings'], function(settings) {
+      window.datalab.settings = settings;
+      // Prepare the ruler options
+      settings.getSetting('showRuler', (showRuler) => {
+        settings.setRulers(showRuler);
       });
-    }
-
-    setRulers('#666', 80, 'dashed');
+    })
 
   });
 

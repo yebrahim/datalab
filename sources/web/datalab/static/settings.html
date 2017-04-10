@@ -13,6 +13,14 @@
       <label><input type="radio" id="darkThemeRadioOption" checked="">Dark Theme</label>
     </div>
   </div>
-  <script src="/static/settings.js" async="true" defer="true"></script>
+  <label>
+    <input type="checkbox" id="showRulerCheckbox">
+    Show Ruler
+  </label>
+  <script type="text/javascript">
+    require(['/static/settings'], function(settings) {
+      settings.populateSettings();
+    });
+  </script>
 </body>
 </html>
