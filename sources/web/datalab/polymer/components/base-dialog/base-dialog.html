@@ -60,17 +60,20 @@ the License.
     <paper-dialog id="theDialog" class$="dialog-big--{{big}}" with-backdrop
                   on-keydown="_checkEnter">
       <div class="dialog-title">{{title}}</div>
-      <!--message value is bound in javascript because it needs to bind to innerHTML-->
-      <div id="message" hidden$="{{!messageHtml}}">{{messageHtml}}</div>
-      <!--body acts as a place holder for extending elements, their custom
-      markup is inserted here by stamping it from Javascript-->
-      <div id="body"></div>
-      <hr>
-      <div class="buttons">
-        <paper-button id="okButton" on-click="_confirmClose" class="confirm" >
-          {{okLabel}}
-        </paper-button>
-        <paper-button on-click="_cancelClose">{{cancelLabel}}</paper-button>
+      <div class="dialog-content">
+        <!--message value is bound in javascript because it needs to bind to innerHTML-->
+        <div id="message" hidden$="{{!messageHtml}}">{{messageHtml}}</div>
+
+        <!--Inheritence insertion point-->
+        <div id="body" class="__insertionPoint"></div>
+      </div>
+      <div class="dialog-footer">
+        <div class="buttons">
+          <paper-button id="okButton" on-click="_confirmClose" class="confirm" >
+            {{okLabel}}
+          </paper-button>
+          <paper-button on-click="_cancelClose">{{cancelLabel}}</paper-button>
+        </div>
       </div>
     </paper-dialog>
   </template>

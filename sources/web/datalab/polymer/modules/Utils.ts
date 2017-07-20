@@ -76,27 +76,36 @@ class Utils {
    * This allows for a very flexible expansion of the superclass's HTML template, so that we're
    * not limited by wrapping the extended element, but we can actually inject extra elements
    * into its template, all while extending all of its javascript and styles.
-   * @param subType class that is extending a superclass
-   * @param baseType the superclass being extended
-   * @param baseRootElementSelector a selector for an element that will be root
-   *                                for the stamped template
+   * @param subType template of the sub-element
+   * @param baseType the template of the element being extended
    */
-  static stampInBaseTemplate(subType: string, baseType: string,
-                             baseRootElementSelector: string) {
-    // Start with the base class's template
-    const basetypeTemplate = Polymer.DomModule.import(baseType, 'template');
-    const subtypeTemplate = Polymer.DomModule.import(subType, 'template');
-    // Clone the base template; we don't want to change it in-place
-    const stampedTemplate = <PolymerTemplate>basetypeTemplate.cloneNode(true);
+  static stampInBaseTemplate(subType: string, baseTypeTemplate: PolymerTemplate) {
 
-    // Insert this template's elements in the base class's #body
-    const bodyElement = stampedTemplate.content.querySelector(baseRootElementSelector);
-    if (bodyElement) {
-      while (subtypeTemplate.content.children.length) {
-        const childNode = <HTMLElement>subtypeTemplate.content.firstElementChild;
-        bodyElement.insertAdjacentElement('beforeend', childNode);
+    const subtypeTemplate = Polymer.DomModule.import(subType, 'template');
+
+    // Clone the base template; we don't want to change it in-place
+    const stampedTemplate = baseTypeTemplate.cloneNode(true) as PolymerTemplate;
+
+    // Find insertion points in base template
+    const insertionPoints = stampedTemplate.content.querySelectorAll('.__insertionPoint');
+
+    // For each insertion point, find the subclass template's corresponding element
+    insertionPoints.forEach((insertionPoint: HTMLElement) => {
+      const insertedElement = subtypeTemplate.content.querySelector('#' + insertionPoint.id);
+      if (!insertedElement) {
+        throw new Error('Cannot extend template, missing insertion point: #' + insertionPoint.id);
       }
-    }
+
+      // Remove the insertion point entirely and replace it with the contents of
+      // the inserted element
+      insertionPoint.outerHTML = insertedElement.innerHTML;
+    });
+
+    // Now insert style element
+    const baseStyle = stampedTemplate.content.querySelector('style') || new HTMLStyleElement();
+    const subStyle = subtypeTemplate.content.querySelector('style') || new HTMLStyleElement();
+
+    baseStyle.innerHTML += subStyle.innerHTML;
 
     return stampedTemplate;
   }

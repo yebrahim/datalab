@@ -49,12 +49,18 @@ the License.
         text-align: center;
         flex: 0 0 20px;
         margin: 0px;
-        padding: 15px; /*Total height: 51px*/
+        padding: 0px;
+        line-height: var(--toolbar-height);
       }
       .dialog-content {
         flex-grow: 1;
         margin: 0px;
         padding: 20px;
+        height: calc(100% - 2*var(--toolbar-height) - 2px)
+      }
+      .dialog-footer {
+        border-top: 1px solid var(--border-color);
+        height: var(--toolbar-height);
       }
       .dialog-buttons {
         direction: rtl;

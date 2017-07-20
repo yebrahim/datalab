@@ -20,9 +20,8 @@ interface BaseDialogCloseResult {
 }
 
 /**
- * Base Dialog element for Datalab. This element can be extended to insert custom markup
- * (including other custom elements) inside it. This can be best done by stamping the
- * subclass's element template into the #body element of this class.
+ * Base Dialog element for Datalab. It contains a title, HTML message, and ok
+ * and cancel buttons. It can also be optionally made big.
  */
 class BaseDialogElement extends Polymer.Element {
 

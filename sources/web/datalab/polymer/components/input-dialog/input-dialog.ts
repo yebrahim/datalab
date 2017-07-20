@@ -44,12 +44,13 @@ class InputDialogElement extends BaseDialogElement {
    */
   public inputValue: string;
 
-  private static _memoizedTemplate: PolymerTemplate;
+  private static _inputTemplate: PolymerTemplate;
 
   static get is() { return "input-dialog"; }
 
   static get properties() {
-    return Object.assign(super.properties, {
+    return {
+      ...super.properties,
       bodyHtml: {
         type: String,
         value: '',
@@ -62,7 +63,7 @@ class InputDialogElement extends BaseDialogElement {
         type: String,
         value: '',
       },
-    });
+    };
   }
 
   open() {
@@ -86,10 +87,10 @@ class InputDialogElement extends BaseDialogElement {
    * See https://www.polymer-project.org/2.0/docs/devguide/dom-template#inherited-templates
    */
   static get template() {
-    if (!this._memoizedTemplate) {
-      this._memoizedTemplate = Utils.stampInBaseTemplate(this.is, super.is, '#body');
+    if (!this._inputTemplate) {
+      this._inputTemplate = Utils.stampInBaseTemplate(this.is, BaseDialogElement.template);
     }
-    return this._memoizedTemplate;
+    return this._inputTemplate;
   }
 
   /**

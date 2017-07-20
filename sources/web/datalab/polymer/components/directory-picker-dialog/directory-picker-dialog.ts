@@ -18,21 +18,21 @@
  * Dialog close context, includes whether the dialog was confirmed, and the user selected
  * directory path.
  */
-interface DirectoryPickerDialogCloseResult extends BaseDialogCloseResult {
+interface DirectoryPickerDialogCloseResult extends InputDialogCloseResult {
   directoryPath: string,
 }
 
 /**
- * Directory Picker Dialog element for Datalab, extends the Base dialog element.
+ * Directory Picker Dialog element for Datalab, extends the Input dialog element.
  * This element is a modal dialog that presents the user with a file picker that can navigate
  * into directories to select destination path of copying or moving an item. It uses a minimal
  * version of the datalab-files element, which shows the file picker without the toolbar, and
  * without the ability to select files.
  * The dialog returns the user selected directory path, if any.
  */
-class DirectoryPickerDialogElement extends BaseDialogElement {
+class DirectoryPickerDialogElement extends InputDialogElement {
 
-  private static _memoizedTemplate: PolymerTemplate;
+  private static _directoryPickerTemplate: PolymerTemplate;
 
   static get is() { return "directory-picker-dialog"; }
 
@@ -42,10 +42,10 @@ class DirectoryPickerDialogElement extends BaseDialogElement {
    * See https://www.polymer-project.org/2.0/docs/devguide/dom-template#inherited-templates
    */
   static get template() {
-    if (!this._memoizedTemplate) {
-      this._memoizedTemplate = Utils.stampInBaseTemplate(this.is, super.is, '#body');
+    if (!this._directoryPickerTemplate) {
+      this._directoryPickerTemplate = Utils.stampInBaseTemplate(this.is, InputDialogElement.template);
     }
-    return this._memoizedTemplate;
+    return this._directoryPickerTemplate;
   }
 
   /**
@@ -53,6 +53,7 @@ class DirectoryPickerDialogElement extends BaseDialogElement {
    */
   getCloseResult() {
     return {
+      ...super.getCloseResult(),
       directoryPath: this.$.filePicker.currentPath,
     };
   }

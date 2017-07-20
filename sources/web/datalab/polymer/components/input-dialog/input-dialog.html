@@ -28,9 +28,16 @@ the License.
         --primary-text-color: var(--primary-fg-color);
       }
     </style>
-    <paper-input id="inputBox" label="{{inputLabel}}" spellcheck=false autofocus
-                 value="{{inputValue}}" no-label-float>
-    </paper-input>
+
+    <div id="body">
+      <!--Inheritence insertion point-->
+      <div id="beforeInput" class="__insertionPoint"></div>
+
+      <paper-input id="inputBox" label="{{inputLabel}}" spellcheck=false autofocus
+                  value="{{inputValue}}" no-label-float>
+      </paper-input>
+    </div>
+
   </template>
 </dom-module>
 
