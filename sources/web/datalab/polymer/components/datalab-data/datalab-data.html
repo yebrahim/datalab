@@ -15,10 +15,12 @@ the License.
 <link rel="import" href="../../components/item-list/item-list.html">
 <link rel="import" href="../../components/shared-styles/shared-styles.html">
 <link rel="import" href="../../components/table-preview/table-preview.html">
+<link rel="import" href="../../components/data-details/data-details.html">
 
-<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/iron-a11y-keys/iron-a11y-keys.html">
+<link rel="import" href="../../bower_components/iron-icon/iron-icon.html">
 <link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
 <link rel="import" href="../../bower_components/paper-input/paper-input.html">
 
 <dom-module id="datalab-data">
@@ -83,9 +85,30 @@ the License.
       #results {
         width: 100%;
       }
+      #openInNotebookButton {
+        background-color: var(--paper-blue-600);
+        color: white;
+        width: 150px;
+      }
+      #openInNotebookButton:hover{
+        @apply --shadow-elevation-4dp;
+      }
+      .sidebarButtons {
+        margin: 15px 0px;
+      }
       #previewPane {
+        padding: 0px 20px;
         background-color: var(--secondary-bg-color);
         box-shadow: inset 4px 0px 10px -3px rgba(0, 0, 0, 0.1);
+        overflow: auto;
+      }
+      .dialog {
+        background-color: var(--primary-bg-color);
+        color: var(--primary-fg-color);
+        width: 80%;
+        height: 80%;
+        display: flex;
+        flex-direction: column;
       }
     </style>
 
@@ -109,10 +132,33 @@ the License.
 
         <!-- Preview pane -->
         <div id="previewPane" slot="right">
-          <table-preview id="preview"></table-preview>
+          <div>
+          <div class="sidebarButtons" hidden$={{!_selectedTableId}}>
+            <paper-button id="openInNotebookButton" raised on-click="_openInNotebook">
+              Open in Notebook
+            </paper-button>
+            <paper-button id="detailsButton" raised on-click="_openDetailsView">
+              Details
+            </paper-button>
+          </div>
+          <table-preview id="preview" table-id="{{_selectedTableId}}"></table-preview>
+          </div>
         </div>
 
       </resizable-divider>
+
+      <!--Details dialog. This shows centered in the middle of the window-->
+      <paper-dialog id="detailsView" class="dialog" with-backdrop>
+        <div class="dialog-title">Table Details: {{_selectedTableId}}</div>
+        <div class="dialog-content">
+          <data-details table-id="{{_selectedTableId}}"></data-details>
+        </div>
+        <hr>
+        <div class="dialog-buttons">
+          <paper-button dialog-dismiss raised>Close</paper-button>
+        </div>
+      </paper-dialog>
+
 
     </div>
 

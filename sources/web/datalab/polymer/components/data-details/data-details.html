@@ -1,0 +1,52 @@
+<!--
+Copyright 2017 Google Inc. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+in compliance with the License. You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License
+is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+or implied. See the License for the specific language governing permissions and limitations under
+the License.
+-->
+
+<link rel="import" href="../../components/shared-styles/shared-styles.html">
+<link rel="import" href="../../components/table-preview/table-preview.html">
+
+<dom-module id="data-details">
+  <template>
+
+    <style include="datalab-shared-styles">
+      .actionButtons {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+      #openInNotebookButton {
+        background-color: var(--paper-blue-600);
+        color: white;
+        width: 150px;
+      }
+      #openInNotebookButton:hover{
+        @apply --shadow-elevation-4dp;
+      }
+      .preview {
+        width: 50%;
+      }
+    </style>
+
+    <div class="actionButtons">
+      <paper-button id="openInNotebookButton" raised on-click="_openInNotebook">
+        Open in Notebook
+      </paper-button>
+    </div>
+    <div class="preview">
+      <table-preview table-id="{{tableId}}"></table-preview>
+    </div>
+
+  </template>
+</dom-module>
+
+<script src="data-details.js"></script>

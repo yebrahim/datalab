@@ -31,6 +31,7 @@ class DataElement extends Polymer.Element {
 
   private _resultsList: Result[];
   private _searchValue: string;
+  private _selectedTableId: string;
 
   static get is() { return 'datalab-data'; }
 
@@ -42,6 +43,10 @@ class DataElement extends Polymer.Element {
         value: () => [],
       },
       _searchValue: {
+        type: String,
+        value: '',
+      },
+      _selectedTableId: {
         type: String,
         value: '',
       },
@@ -170,14 +175,31 @@ class DataElement extends Polymer.Element {
   }
 
   _resultsSelectionChanged() {
+    this._selectedTableId = '';
     const selectedIndices = (this.$.results as ItemListElement).selectedIndices;
     if (selectedIndices.length === 1) {
       const selectedItem = this._resultsList[selectedIndices[0]];
       if (selectedItem.type === 'table') {
-        (this.$.preview as TablePreviewElement).tableId = selectedItem.name;
+        this._selectedTableId = selectedItem.name;
       }
-    } else {
-      (this.$.preview as TablePreviewElement).tableId = '';
+    }
+  }
+
+  /**
+   * Opens the current table in the table schema template notebook.
+   */
+  async _openInNotebook() {
+    if (this._selectedTableId) {
+      Utils.openTableInNotebook(this._selectedTableId);
+    }
+  }
+
+  /**
+   * Opens the details view for the currently selected table, if any.
+   */
+  async _openDetailsView() {
+    if (this._selectedTableId) {
+      this.$.detailsView.open();
     }
   }
 }

@@ -105,6 +105,30 @@ class Utils {
   }
 
   /**
+   * Opens the given table in the table schema template notebook.
+   */
+  public static async openTableInNotebook(tableId: string) {
+
+    if (tableId) {
+      const tableName = tableId.replace(':', '.'); // Standard BigQuery table name
+      const template = new TableSchemaTemplate(tableName);
+
+      try {
+        const model = await TemplateManager.newNotebookFromTemplate(template);
+
+        if (model) {
+          const newFile = await ApiManager.saveJupyterFile(model) as JupyterFile;
+          const basePath = await ApiManager.getBasePath();
+          const prefix = location.protocol + '//' + location.host + basePath + '/';
+          window.open(prefix + 'notebooks' + '/' + newFile.path, '_blank');
+        }
+      } catch (e) {
+        Utils.showErrorDialog('Error', e.message);
+      }
+    }
+  }
+
+  /**
    * Given a string type for an item, return the name of the icon to use.
    */
   public static getItemIconString(type: string) {
