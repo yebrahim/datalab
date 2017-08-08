@@ -19,10 +19,16 @@ the License.
   <template>
 
     <style include="datalab-shared-styles">
+      :host {
+        display: flex;
+        flex-direction: column;
+        padding: 15px;
+      }
       .actionButtons {
         display: flex;
         flex-direction: row;
         justify-content: flex-end;
+        flex: 0 0 auto;
       }
       #openInNotebookButton {
         background-color: var(--paper-blue-600);
@@ -33,7 +39,8 @@ the License.
         @apply --shadow-elevation-4dp;
       }
       .preview {
-        width: 50%;
+        flex: 1 1 auto;
+        overflow: auto;
       }
     </style>
 
