@@ -16,6 +16,7 @@
     "../../../../third_party/externs/ts/polymer/polymer.d.ts"
   ],
   "exclude": [
-    "bower_components"
+    "bower_components",
+    "node_modules"
   ]
 }
