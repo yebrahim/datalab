@@ -19,6 +19,8 @@
  * explicitly set it to null.
  */
 interface DatalabPageElement extends Polymer.Element {
+  currentFileId: DatalabFileId;
+
   resizeHandler: (() => void) | null;
   focusHandler: (() => void) | null;
   blurHandler: (() => void) | null;

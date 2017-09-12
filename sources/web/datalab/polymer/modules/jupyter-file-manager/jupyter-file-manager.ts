@@ -299,20 +299,12 @@ class JupyterFileManager implements FileManager {
     return Utils.getHostRoot() + '/editor?file=' + fileId.toQueryString();
   }
 
-  public pathToPathHistory(path: string): DatalabFile[] {
-    // For backward compatibility with the current path format.
-    if (path.startsWith('/tree/')) {
-      path = path.substr('/tree/'.length);
-    }
-    const tokens = path.split('/').filter((p) => !!p);
-    const pathHistory = tokens.map((token, i) => {
-      const f = new JupyterFile();
-      f.path = tokens.slice(0, i + 1).join('/');
-      f.name = token;
-      f.id = new DatalabFileId(f.path, FileManagerType.JUPYTER);
-      return f;
-    });
-    return pathHistory;
+  public async fileIdToFullPath(fileId: DatalabFileId): Promise<DatalabFile[]> {
+    const tokens = fileId.path.split('/').filter((p) => !!p);
+    const fullPath = tokens.map((_, i) =>
+        this.get(new DatalabFileId(tokens.slice(0, i + 1).join('/'), FileManagerType.JUPYTER)));
+    fullPath.unshift(this.getRootFile());
+    return Promise.all(fullPath);
   }
 
   private _getFileWithContent(fileId: string) {

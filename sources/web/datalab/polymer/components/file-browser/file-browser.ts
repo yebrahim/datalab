@@ -41,14 +41,14 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
   public readyPromise: Promise<void>;
 
   /**
-   * The current listing directory
+   * The fileId of currentFile
    */
-  public currentFile: DatalabFile;
+  public currentFileId: DatalabFileId;
 
   /**
-   * The fileId of currentFile as a string
+   * The list of files leading up to the current file
    */
-  public fileId: string;
+  public currentPath: DatalabFile[];
 
   /**
    * The type of FileManager we want to use for this file-browser.
@@ -86,10 +86,7 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
   private _fileListRefreshInterval = 60 * 1000;
   private _fileListRefreshIntervalHandle = 0;
   private _fileManager: FileManager;
-  private _ignoreFileIdChange = false;
   private _isPreviewPaneToggledOn: boolean;
-  private _pathHistory: DatalabFile[];
-  private _pathHistoryIndex: number;
   private _updateToolbarCollapseThreshold = 720;
   private _uploadFileSizeWarningLimit = 25 * 1024 * 1024;
 
@@ -126,23 +123,14 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
         computed: '_computeIsToolbarHidden(small, hideToolbar)',
         type: Boolean,
       },
-      _pathHistory: {
-        type: Array,
-        value: () => [],
-      },
-      _pathHistoryIndex: {
-        observer: '_pathHistoryIndexChanged',
-        type: Number,
-        value: -1,
-      },
-      currentFile: {
-        type: Object,
-        value: null,
-      },
-      fileId: {
+      currentFileId: {
         notify: true,
-        observer: '_fileIdChanged',
+        observer: '_currentFileIdChanged',
         type: String,
+      },
+      currentPath: {
+        observer: '_currentPathChanged',
+        type: Object,
       },
       fileManagerType: {
         type: String,
@@ -176,9 +164,6 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     // that. We want ready() to be the entry point so it gets the user's last saved path.
     this._fetching = true;
 
-    // Likewise, we set the flag to prevent _fileIdChanged from taking action.
-    this._ignoreFileIdChange = true;
-
     super.ready();
 
     const filesElement = this.$.files as ItemListElement;
@@ -187,18 +172,17 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     this.$.breadCrumbs.addEventListener('crumbClicked', (e: ItemClickEvent) => {
       // Take the default root file into account, increment clicked index by one.
       // If there are any leading breadcrumbs we trimmed, add that number back.
-      this._pathHistoryIndex = e.detail.index + 1 + this.nLeadingBreadcrumbsToTrim;
+      this.currentFileId = this.currentPath[e.detail.index + 1 + this.nLeadingBreadcrumbsToTrim].id;
     });
     this.$.breadCrumbs.addEventListener('rootClicked', () => {
       // If there are any leading breadcrumbs we trimmed, add that number back.
-      this._pathHistoryIndex = 0 + this.nLeadingBreadcrumbsToTrim;
+      this.currentFileId = this.currentPath[0 + this.nLeadingBreadcrumbsToTrim].id;
     });
 
     this._apiManager = ApiManagerFactory.getInstance();
 
-    const fileId = this._getFileIdFromProperty();
-    if (fileId) {
-      this.fileManagerType = FileManagerFactory.fileManagerTypetoString(fileId.source);
+    if (this.currentFileId) {
+      this.fileManagerType = FileManagerFactory.fileManagerTypetoString(this.currentFileId.source);
     }
 
     if (!this.fileManagerType) {
@@ -224,33 +208,15 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     // consider adding it to a super class, maybe DatalabElement. For now, this
     // is the only element that needs it.
     if (!this.readyPromise) {
-      this.readyPromise = this._loadStartupPath(fileId)
+      this.readyPromise = this._loadStartupPath()
           .then(() => this._finishLoadingFiles());
     }
 
-    this._ignoreFileIdChange = false;
     return this.readyPromise.catch((e) => {
       Utils.showErrorDialog('Error loading file', e.message);
       this._fetching = false; // Stop looking busy
       throw e;
     });
-  }
-
-  _getFileIdFromProperty() {
-    let fileId: DatalabFileId|null = null;
-    if (this.fileId) {
-      if (!this.offsetParent) {
-        // Ignore fileId property if we are not visible
-        return null;
-      }
-      try {
-        fileId = DatalabFileId.fromQueryString(this.fileId);
-      } catch (e) {
-        Utils.showErrorDialog('Invalid file query parameter', e.message);
-        // Fall through with fileId unset
-      }
-    }
-    return fileId;
   }
 
   _getFileManagerTypeFromQueryParams() {
@@ -267,22 +233,19 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     return '';
   }
 
-  async _fileIdChanged() {
-    if (this._ignoreFileIdChange) {
-      return;
-    }
-    const fileId = this._getFileIdFromProperty();
-    if (!fileId) {
+  async _currentFileIdChanged() {
+    if (!this.currentFileId) {
       return;
     }
     const newFileManagerType =
-        FileManagerFactory.fileManagerTypetoString(fileId.source);
+        FileManagerFactory.fileManagerTypetoString(this.currentFileId.source);
     if (newFileManagerType !== this.fileManagerType) {
       this.fileManagerType = newFileManagerType;
       this._fileManager = FileManagerFactory.getInstanceForType(
           FileManagerFactory.fileManagerNameToType(this.fileManagerType));
     }
-    this._loadStartupPath(fileId);
+    this.currentPath = await this._fileManager.fileIdToFullPath(this.currentFileId);
+    this._fetchFileList();
   }
 
   disconnectedCallback() {
@@ -310,13 +273,13 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     if (this._fetching) {
       return this._fileListFetchPromise;
     }
-    if (!this.currentFile) {
+    if (!this.currentFileId) {
       throw new Error('No current file to retrieve');
     }
 
     this._fetching = true;
 
-    this._fileListFetchPromise = this._fileManager.list(this.currentFile.id)
+    this._fileListFetchPromise = this._fileManager.list(this.currentFileId)
       .then((newList) => {
         // Only refresh the UI list if there are any changes. This helps keep
         // the item list's selections intact most of the time
@@ -378,17 +341,8 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
       return;
     }
     if (clickedItem.type === DatalabFileType.DIRECTORY) {
-      // First, remove all items in the array past _pathHistoryIndex. These are
-      // only there to allow for forward navigation after going back, but they
-      // should be purged when adding a new directory, this effectively starts a
-      // new branch in the navigation tree, and prunes the old one.
-      this._pathHistory.splice(this._pathHistoryIndex + 1);
-      // Only push the new file if it's not already on top of the stack.
-      if (!this._pathHistory.length ||
-          this._pathHistory[this._pathHistory.length - 1].id !== clickedItem.id) {
-        this._pathHistory.push(clickedItem);
-        this._pathHistoryIndex = this._pathHistory.length - 1;
-      }
+      this.currentPath.push(clickedItem);
+      this.currentFileId = clickedItem.id;
     } else if (clickedItem.type === DatalabFileType.NOTEBOOK) {
       const url = await this._fileManager.getNotebookUrl(clickedItem.id);
       window.open(url, '_blank');
@@ -417,46 +371,25 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
    * Goes back one step in history.
    */
   _navBackward() {
-    this._pathHistoryIndex = Math.max(this._pathHistoryIndex - 1, 0);
+    window.history.back();
   }
 
   /**
    * Goes forward one step in history.
    */
   _navForward() {
-    this._pathHistoryIndex = Math.min(this._pathHistoryIndex + 1, this._pathHistory.length - 1);
+    window.history.forward();
   }
 
   /**
-   * Maintains the enabled/disabled state of the navigation buttons according to
-   * the current history index value.
+   * Maintains the breadcrumbs when the path changes.
    */
-  _pathHistoryIndexChanged() {
-    this.$.backNav.disabled = this._pathHistoryIndex === 0;
-    this.$.forwardNav.disabled = this._pathHistoryIndex === this._pathHistory.length - 1;
-
+  _currentPathChanged() {
     // Ignore the root file since that's shown by the crumbs element anyway,
     // also ignore any trimmed leading breadcrumbs. Slice up till the current
     // history index.
     const rootBreadcrumbs = 1 + this.nLeadingBreadcrumbsToTrim;
-    this.$.breadCrumbs.crumbs =
-        this._pathHistory.slice(rootBreadcrumbs, this._pathHistoryIndex + 1).map((p) => p.name);
-
-    this.currentFile = this._pathHistory[this._pathHistoryIndex];
-    this._setFileIdPropertyToCurrentFile();
-    this._fetchFileList();
-  }
-
-  _setFileIdPropertyToCurrentFile() {
-    if (this.currentFile) {
-      if (!this.offsetParent) {
-        // Don't update the location if we are not visible
-        return;
-      }
-      this._ignoreFileIdChange = true;
-      this.fileId = this.currentFile.id.toQueryString();
-      this._ignoreFileIdChange = false;
-    }
+    this.$.breadCrumbs.crumbs = this.currentPath.map((p) => p.name).slice(rootBreadcrumbs);
   }
 
   _createNewNotebook() {
@@ -548,11 +481,11 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
           // Extract the base64 data string
           itemData = itemData.substr(itemData.indexOf(',') + 1);
 
-          return this._fileManager.create(DatalabFileType.FILE, this.currentFile.id, file.name)
+          return this._fileManager.create(DatalabFileType.FILE, this.currentFileId, file.name)
             .then((newFile: JupyterFile) => {
               newFile.format = 'base64';
               newFile.name = file.name;
-              newFile.path = (this.currentFile as JupyterFile).path;
+              newFile.path = this.currentFileId.path;
               newFile.status = DatalabFileStatus.IDLE;
               return newFile;
             })
@@ -614,7 +547,7 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
             newName += '.ipynb';
           }
 
-          return this._fileManager.create(itemType, this.currentFile.id, newName)
+          return this._fileManager.create(itemType, this.currentFileId, newName)
             .then(() => {
               // Dispatch a success notification, and refresh the file list
               this.dispatchEvent(new NotificationEvent('Created ' + newName + '.'));
@@ -925,13 +858,6 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     }
     // Refresh the list
     this._fetchFileList();
-
-    // This method is called when we are switching tabs, and when that is
-    // happening, iron-location sets an internal dontUpdateUrl flag that
-    // prevents our update of the fileIdProperty from happening. In order to
-    // get our file param in place, we delay execution until after
-    // _urlChanged() in iron-location.html has completed.
-    window.setTimeout(() => this._setFileIdPropertyToCurrentFile(), 0);
   }
 
   /**
@@ -945,26 +871,22 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     }
   }
 
-  private async _loadStartupPath(fileId: DatalabFileId|null) {
-    this._pathHistory = [];
-    if (fileId) {
-      this._pathHistory = this._fileManager.pathToPathHistory(fileId.path);
-    } else if (this.fileManagerType === 'jupyter') {
+  private async _loadStartupPath() {
+    if (this.fileManagerType === 'jupyter') {
       // TODO - make SettingsManager able to store startuppaths
       // for multiple file managers.
       const settings = await SettingsManager.getUserSettingsAsync(true /*forceRefresh*/);
-      const startuppath = settings.startuppath;
+      let startuppath = settings.startuppath;
       if (startuppath) {
-        this._pathHistory = this._fileManager.pathToPathHistory(startuppath);
+        // For backward compatibility with the current path format.
+        if (startuppath.startsWith('/tree/')) {
+          startuppath = startuppath.substr('/tree/'.length);
+        }
+        this.currentFileId = new DatalabFileId(startuppath, FileManagerType.JUPYTER);
       }
-    }
-    // Always add the root file to the beginning.
-    const root = await this._fileManager.getRootFile();
-    this._pathHistory.unshift(root);
-    if (this._pathHistoryIndex === this._pathHistory.length - 1) {
-      this._pathHistoryIndexChanged();
-    } else {
-      this._pathHistoryIndex = this._pathHistory.length - 1;
+    } else if (!this.currentFileId) {
+      const root = await this._fileManager.getRootFile();
+      this.currentFileId = root.id;
     }
   }
 

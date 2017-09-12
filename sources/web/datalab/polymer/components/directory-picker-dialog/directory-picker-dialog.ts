@@ -88,7 +88,7 @@ class DirectoryPickerDialogElement extends BaseDialogElement {
     const picker: FileBrowserElement = this.$.filePicker;
     return {
       fileName: this.withFileName ? this.$.fileNameBox.value : undefined,
-      selectedDirectory: picker.currentFile,
+      selectedDirectory: picker.currentFileId,
     };
   }
 

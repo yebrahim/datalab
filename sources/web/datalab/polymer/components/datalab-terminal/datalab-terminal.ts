@@ -38,6 +38,7 @@ class TerminalElement extends Polymer.Element implements DatalabPageElement {
 
   public focusHandler = null;
   public blurHandler = null;
+  public currentFileId: DatalabFileId;
 
   private _xterm: Terminal;
   private _wsConnection: WebSocket;

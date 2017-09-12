@@ -28,6 +28,8 @@ class SessionsElement extends Polymer.Element implements DatalabPageElement {
 
   public resizeHandler = null;
 
+  public currentFileId: DatalabFileId;
+
   private _sessionList: Session[];
   private _fetching: boolean;
   private _sessionListRefreshInterval = 60 * 1000;

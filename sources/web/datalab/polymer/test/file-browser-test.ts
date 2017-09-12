@@ -22,12 +22,11 @@ class MockFileManager implements FileManager {
     throw new UnsupportedMethod('getContent', this);
   }
   public async getRootFile() {
-    const file: DatalabFile = new MockDatalabFile({
-      icon: '/',
-      id: new DatalabFileId('/', FileManagerType.JUPYTER),
-      name: 'root',
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile);
+    const file: DatalabFile = new MockDatalabFile();
+    file.icon = '/';
+    file.id = new DatalabFileId('/', FileManagerType.JUPYTER);
+    file.name = 'root';
+    file.type = DatalabFileType.DIRECTORY;
     return file;
   }
   public saveText(_file: DatalabFile, _content: string): Promise<DatalabFile> {
@@ -56,11 +55,11 @@ class MockFileManager implements FileManager {
   public getEditorUrl(_fileId: DatalabFileId): Promise<string> {
     throw new UnsupportedMethod('getEditorUrl', this);
   }
-  public pathToPathHistory(path: string): DatalabFile[] {
-    const datalabFile = new MockDatalabFile({
-      id: new DatalabFileId(path, FileManagerType.JUPYTER),
-    } as DatalabFile);
-    return [datalabFile];
+  public fileIdToFullPath(fileId: DatalabFileId): Promise<DatalabFile[]> {
+    const datalabFile = {
+      id: new DatalabFileId(fileId.path, FileManagerType.JUPYTER),
+    } as DatalabFile;
+    return Promise.resolve([datalabFile]);
   }
 }
 
@@ -68,29 +67,22 @@ describe('<file-browser>', () => {
   let testFixture: FileBrowserElement;
   const startuppath = new DatalabFileId('testpath', FileManagerType.JUPYTER);
 
-  const mockFiles: DatalabFile[] = [
-    new MockDatalabFile({
-      icon: '',
-      id: new DatalabFileId('', FileManagerType.JUPYTER),
-      name: 'file1',
-      status: DatalabFileStatus.IDLE,
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile),
-    new MockDatalabFile({
-      icon: '',
-      id: new DatalabFileId('', FileManagerType.JUPYTER),
-      name: 'file2',
-      status: DatalabFileStatus.IDLE,
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile),
-    new MockDatalabFile({
-      icon: '',
-      id: new DatalabFileId('', FileManagerType.JUPYTER),
-      name: 'file3',
-      status: DatalabFileStatus.RUNNING,
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile),
-  ];
+  const mockFiles: DatalabFile[] = [new MockDatalabFile(), new MockDatalabFile(),
+                                    new MockDatalabFile()];
+  mockFiles[0].icon = '';
+  mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
+  mockFiles[0].name = 'file1';
+  mockFiles[0].type = DatalabFileType.DIRECTORY;
+
+  mockFiles[0].icon = '';
+  mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
+  mockFiles[0].name = 'file2';
+  mockFiles[0].type = DatalabFileType.DIRECTORY;
+
+  mockFiles[0].icon = '';
+  mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
+  mockFiles[0].name = 'file3';
+  mockFiles[0].type = DatalabFileType.DIRECTORY;
 
   before(() => {
     SettingsManager.getUserSettingsAsync = (forceRefresh: boolean) => {
@@ -125,7 +117,7 @@ describe('<file-browser>', () => {
   });
 
   it('gets the startup path correctly', () => {
-    assert(JSON.stringify(testFixture.currentFile.id) === JSON.stringify(startuppath),
+    assert(JSON.stringify(testFixture.currentFileId) === JSON.stringify(startuppath),
         'incorrect startup path');
   });
 

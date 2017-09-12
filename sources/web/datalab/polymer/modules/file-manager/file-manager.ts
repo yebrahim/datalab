@@ -42,35 +42,6 @@ enum DatalabFileStatus {
   RUNNING,
 }
 
-/**
- * Unique identifier for a file object.
- */
-class DatalabFileId {
-  private static _delim = ':';
-
-  path: string;
-  source: FileManagerType;
-
-  constructor(path: string, source: FileManagerType) {
-    this.path = path;
-    this.source = source;
-  }
-
-  public static fromQueryString(querystring: string) {
-    const tokens = querystring.split(DatalabFileId._delim);
-    if (tokens.length !== 2) {
-      throw new Error('Invalid format for file id: ' + querystring);
-    }
-    return new DatalabFileId(tokens[1], FileManagerFactory.fileManagerNameToType(tokens[0]));
-  }
-
-  public toQueryString() {
-    return FileManagerFactory.fileManagerTypetoString(this.source) + DatalabFileId._delim +
-        this.path;
-  }
-
-}
-
 class NotebookContent {
   public static EMPTY_NOTEBOOK_CONTENT = `{
     "cells": [
@@ -110,14 +81,10 @@ abstract class DatalabFile {
   status?: DatalabFileStatus;
   type: DatalabFileType;
 
-  constructor(obj?: DatalabFile) {
-    if (obj) {
-      this.icon = obj.icon;
-      this.name = obj.name;
-      this.id = obj.id;
-      this.status = obj.status;
-      this.type = obj.type;
-    }
+  constructor() {
+    this.icon = '';
+    this.name = '';
+    this.status = DatalabFileStatus.IDLE;
   }
 
   public getPreviewName(): string {
@@ -213,7 +180,7 @@ interface FileManager {
   getEditorUrl(file: DatalabFileId): Promise<string>;
 
   /**
-   * Creates a path history from a path string.
+   * Returns a list of files representing the path to the given file id.
    */
-  pathToPathHistory(path: string): DatalabFile[];
+  fileIdToFullPath(fileId: DatalabFileId): Promise<DatalabFile[]>;
 }

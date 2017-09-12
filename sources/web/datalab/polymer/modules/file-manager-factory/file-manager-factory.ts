@@ -100,3 +100,32 @@ class FileManagerFactory {
     }
   }
 }
+
+/**
+ * Unique identifier for a file object.
+ */
+class DatalabFileId {
+  private static _delim = ':';
+
+  path: string;
+  source: FileManagerType;
+
+  constructor(path: string, source: FileManagerType) {
+    this.path = path;
+    this.source = source;
+  }
+
+  public static fromQueryString(querystring: string) {
+    const tokens = querystring.split(DatalabFileId._delim);
+    if (tokens.length !== 2) {
+      throw new Error('Invalid format for file id: ' + querystring);
+    }
+    return new DatalabFileId(tokens[1], FileManagerFactory.fileManagerNameToType(tokens[0]));
+  }
+
+  public toQueryString() {
+    return FileManagerFactory.fileManagerTypetoString(this.source) + DatalabFileId._delim +
+        this.path;
+  }
+
+}

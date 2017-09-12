@@ -18,6 +18,7 @@
  */
 
 class DriveFile extends DatalabFile {
+  parents: string[];
 }
 
 /**
@@ -29,22 +30,29 @@ class DriveFileManager implements FileManager {
   private static readonly _notebookMimeType = 'application/json';
 
   private static _upstreamToDriveFile(file: gapi.client.drive.File) {
-    const datalabFile: DriveFile = new DriveFile({
-      icon: file.iconLink,
-      id: new DatalabFileId(file.id, FileManagerType.DRIVE),
-      name: file.name,
-      status: DatalabFileStatus.IDLE,
-      type: file.mimeType === DriveFileManager._directoryMimeType ?
-                              DatalabFileType.DIRECTORY :
-                              DatalabFileType.FILE,
-    } as DatalabFile);
+    const datalabFile: DriveFile = new DriveFile();
+    datalabFile.icon = file.iconLink;
+    datalabFile.id = new DatalabFileId(file.id, FileManagerType.DRIVE);
+    datalabFile.name = file.name;
+    datalabFile.parents = file.parents;
+    datalabFile.status = DatalabFileStatus.IDLE;
+    datalabFile.type = file.mimeType === DriveFileManager._directoryMimeType ?
+                                         DatalabFileType.DIRECTORY :
+                                         DatalabFileType.FILE;
     if (datalabFile.name.endsWith('.ipynb')) {
       datalabFile.type = DatalabFileType.NOTEBOOK;
     }
     return datalabFile;
   }
   public async get(fileId: DatalabFileId): Promise<DatalabFile> {
-    const upstreamFile = await GapiManager.drive.getFile(fileId.path);
+    const fields = [
+      'id',
+      'kind',
+      'mimeType',
+      'name',
+      'parents',
+    ];
+    const upstreamFile = await GapiManager.drive.getFile(fileId.path, fields);
     return DriveFileManager._upstreamToDriveFile(upstreamFile);
   }
 
@@ -159,17 +167,16 @@ class DriveFileManager implements FileManager {
         '/notebook?file=' + fileId.toQueryString();
   }
 
-  public pathToPathHistory(path: string): DatalabFile[] {
-    if (path === '') {
-      return [];
-    } else {
-      // TODO - create the real path to this object, or figure out
-      // a better way to handle not having the full path in the breadcrumbs
-      const fileId = path;  // We assume the entire path is one fileId
-      const datalabFile: DriveFile = new DriveFile({
-        id: new DatalabFileId(fileId, FileManagerType.DRIVE),
-      } as DatalabFile);
-      return [datalabFile];
+  public async fileIdToFullPath(fileId: DatalabFileId): Promise<DatalabFile[]> {
+    // TODO - create the real path to this object, or figure out
+    // a better way to handle not having the full path in the breadcrumbs
+    let file = await this.get(fileId) as DriveFile;
+    const fullPath = [file];
+    while (file.parents) {
+      file = await this.get(
+          new DatalabFileId(file.parents[0], FileManagerType.DRIVE)) as DriveFile;
+      fullPath.unshift(file);
     }
+    return fullPath;
   }
 }

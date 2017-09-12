@@ -20,6 +20,8 @@
  */
 class DataBrowserElement extends Polymer.Element implements DatalabPageElement {
 
+  public currentFileId: DatalabFileId;
+
   static get is() { return 'data-browser'; }
 
   static get properties() {

@@ -29,12 +29,7 @@ class DatalabAppElement extends Polymer.Element {
   /**
    * The query parameters (from app-location).
    */
-  public queryParams: {};
-
-  /**
-   * The fileId being propagated to and from our pages.
-   */
-  public fileId: string;
+  public queryParams: {[key: string]: string};
 
   /**
    * Current displayed page name
@@ -55,6 +50,7 @@ class DatalabAppElement extends Polymer.Element {
   public routeData: object;
 
   private _boundResizeHandler: EventListenerObject;
+  private readonly _fileParamName = 'file';
 
   constructor() {
     super();
@@ -92,10 +88,6 @@ class DatalabAppElement extends Polymer.Element {
 
   static get properties() {
     return {
-      fileId: {
-        observer: '_fileIdChanged',
-        type: String,
-      },
       page: {
         observer: '_pageChanged',
         type: String,
@@ -103,7 +95,6 @@ class DatalabAppElement extends Polymer.Element {
       },
       queryParams: {
         notify: true,
-        observer: '_queryParamsChanged',
         type: Object,
       },
       rootPattern: String,
@@ -116,6 +107,7 @@ class DatalabAppElement extends Polymer.Element {
       // We need a complex observer for changes to the routeData
       // object's page property.
       '_routePageChanged(routeData.page)',
+      '_fileIdQueryParamChanged(queryParams.file)',
     ];
   }
 
@@ -123,6 +115,12 @@ class DatalabAppElement extends Polymer.Element {
     super.ready();
 
     window.addEventListener('focus', () => this._focusHandler());
+
+    for (const element of this.$.pages.children) {
+      element.addEventListener('current-file-id-changed', () => {
+        this.set('queryParams.file', (element as DatalabPageElement).currentFileId.toQueryString());
+      });
+    }
   }
 
   /**
@@ -134,17 +132,18 @@ class DatalabAppElement extends Polymer.Element {
     }
   }
 
-  _queryParamsChanged() {
-    const queryParams = (this.queryParams || {}) as {[key: string]: string};
-    const fileParamName = 'file';
-    const fileParam = queryParams[fileParamName] || '';
-    if (fileParam !== this.fileId) {
-      this.fileId = fileParam;
-    }
-  }
+  _fileIdQueryParamChanged() {
+    const queryParams = (this.queryParams || {});
+    const fileParam = queryParams[this._fileParamName] || '';
+    // TODO: Consider switching the active page based on the source of the file
+    // parameter
+    // TODO: Check browser compatibility/polyfills for URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('file', fileParam);
+    window.history.pushState({}, '', url.toString());
 
-  _fileIdChanged() {
-    this.set('queryParams.file', this.fileId);
+    const activePageElement = this._getPageElement(this.page) as DatalabPageElement;
+    activePageElement.currentFileId = DatalabFileId.fromQueryString(fileParam);
   }
 
   /**
