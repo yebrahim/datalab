@@ -51,6 +51,7 @@ class DatalabAppElement extends Polymer.Element {
 
   private _boundResizeHandler: EventListenerObject;
   private readonly _fileParamName = 'file';
+  private _ignoreFileIdChanges = false;
 
   constructor() {
     super();
@@ -118,7 +119,9 @@ class DatalabAppElement extends Polymer.Element {
 
     for (const element of this.$.pages.children) {
       element.addEventListener('current-file-id-changed', () => {
+        this._ignoreFileIdChanges = true;
         this.set('queryParams.file', (element as DatalabPageElement).currentFileId.toQueryString());
+        this._ignoreFileIdChanges = false;
       });
     }
   }
@@ -133,6 +136,9 @@ class DatalabAppElement extends Polymer.Element {
   }
 
   _fileIdQueryParamChanged() {
+    if (this._ignoreFileIdChanges) {
+      return;
+    }
     const queryParams = (this.queryParams || {});
     const fileParam = queryParams[this._fileParamName] || '';
     // TODO: Consider switching the active page based on the source of the file
