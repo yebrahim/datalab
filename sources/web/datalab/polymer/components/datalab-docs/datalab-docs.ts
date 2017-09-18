@@ -20,6 +20,8 @@
  */
 class DatalabDocsElement extends Polymer.Element implements DatalabPageElement {
 
+  public currentFileId: DatalabFileId;
+
   static get is() { return 'datalab-docs'; }
 
   static get properties() {

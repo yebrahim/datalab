@@ -57,8 +57,8 @@ describe('<table-inline-details>', () => {
   };
 
   const mockTabledata: ListTabledataResponse = {
-    kind: 'bigquery#tableDataList',
     etag: 'x',
+    kind: 'bigquery#tableDataList',
     pageToken: '',
     rows: [
       {f: [{ v: 'r1f1' }, { v: 'r1f2' }]},
@@ -69,13 +69,11 @@ describe('<table-inline-details>', () => {
   };
 
   const fileForTableId = (tableId: string) => {
-    return new BigQueryFile({
-      icon: '',
-      id: new DatalabFileId(tableId, FileManagerType.BIG_QUERY),
-      name: '/',
-      status: DatalabFileStatus.IDLE,
-      type: DatalabFileType.FILE,
-    } as DatalabFile);
+    const file = new BigQueryFile();
+    file.id = new DatalabFileId(tableId, FileManagerType.BIG_QUERY);
+    file.name = '/';
+    file.type = DatalabFileType.FILE;
+    return file;
   };
 
   /**

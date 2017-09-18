@@ -69,17 +69,14 @@ describe('<file-browser>', () => {
 
   const mockFiles: DatalabFile[] = [new MockDatalabFile(), new MockDatalabFile(),
                                     new MockDatalabFile()];
-  mockFiles[0].icon = '';
   mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
   mockFiles[0].name = 'file1';
   mockFiles[0].type = DatalabFileType.DIRECTORY;
 
-  mockFiles[0].icon = '';
   mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
   mockFiles[0].name = 'file2';
   mockFiles[0].type = DatalabFileType.DIRECTORY;
 
-  mockFiles[0].icon = '';
   mockFiles[0].id = new DatalabFileId('', FileManagerType.JUPYTER);
   mockFiles[0].name = 'file3';
   mockFiles[0].type = DatalabFileType.DIRECTORY;

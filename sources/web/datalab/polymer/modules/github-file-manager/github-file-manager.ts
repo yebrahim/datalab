@@ -109,7 +109,7 @@ class GithubFileManager implements FileManager {
       // If at least two path components were specified, then we have
       // a username and a project. Everything after that, if specified,
       // are folders or files under that.
-      const githubPath = '/repos/' + pathParts.slice(0,2).join('/') +
+      const githubPath = '/repos/' + pathParts.slice(0, 2).join('/') +
         '/contents/' + pathParts.slice(2).join('/');
       return this._githubApiPathRequest(githubPath)
           .then((response: GhDirEntryResponse[]) => {
@@ -145,13 +145,12 @@ class GithubFileManager implements FileManager {
         '/notebook?file=' + fileId.toQueryString();
   }
 
-  public pathToPathHistory(path: string): DatalabFile[] {
-    const pathParts = path.split('/').filter((part) => !!part);
-    const files: DatalabFile[] = [];
-    for (let p = 0; p < pathParts.length; p++) {
-      files[p] = this._ghPathPartsToDatalabFile(pathParts.slice(0, p + 1));
-    }
-    return files;
+  public async fileIdToFullPath(fileId: DatalabFileId): Promise<DatalabFile[]> {
+    const tokens = fileId.path.split('/').filter((p) => !!p);
+    const fullPath = tokens.map((_, i) =>
+        this.get(new DatalabFileId(tokens.slice(0, i + 1).join('/'), FileManagerType.JUPYTER)));
+    fullPath.unshift(this.getRootFile());
+    return Promise.all(fullPath);
   }
 
   private _githubPathForFileId(fileId: DatalabFileId, op: string): string {
@@ -161,24 +160,9 @@ class GithubFileManager implements FileManager {
     } else if (pathParts.length === 1) {
       throw new Error(op + ' on a github user is not allowed');
     }
-    const githubPath = '/repos/' + pathParts.slice(0,2).join('/') +
+    const githubPath = '/repos/' + pathParts.slice(0, 2).join('/') +
         '/contents/' + pathParts.slice(2).join('/');
     return githubPath;
-  }
-
-  // We don't know if the type of the item is actually a directory without
-  // querying the github API, so we assume every component is a dir.
-  // TODO(jimmc): update pathToPathHistory to query github for the last
-  // component on the list to see whether it is a file or directory.
-  private _ghPathPartsToDatalabFile(parts: string[]): DatalabFile {
-    const path = parts.join('/');
-    return new GithubFile({
-      icon: '',
-      id: new DatalabFileId(path, FileManagerType.GITHUB),
-      name: parts[parts.length - 1],
-      status: DatalabFileStatus.IDLE,
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile);
   }
 
   private _githubApiPathRequest(githubPath: string): Promise<any> {
@@ -207,18 +191,16 @@ class GithubFileManager implements FileManager {
 
   private _ghRootDatalabFile(): DatalabFile {
     const path = '/';
-    return new GithubFile({
-      icon: '',
-      id: new DatalabFileId(path, FileManagerType.GITHUB),
-      name: '/',
-      status: DatalabFileStatus.IDLE,
-      type: DatalabFileType.DIRECTORY,
-    } as DatalabFile);
+    const file = new GithubFile();
+    file.id = new DatalabFileId(path, FileManagerType.GITHUB);
+    file.name = '/';
+    file.type = DatalabFileType.DIRECTORY;
+    return file;
   }
 
   private _ghReposResponseToDatalabFiles(response: GhRepoResponse[]):
       DatalabFile[] {
-    return response.map(repo => this._ghRepoToDatalabFile(repo));
+    return response.map((repo) => this._ghRepoToDatalabFile(repo));
   }
 
   private _ghDirEntriesResponseToDatalabFiles(response: GhDirEntryResponse[]):
@@ -234,13 +216,12 @@ class GithubFileManager implements FileManager {
   private _ghRepoToDatalabFile(repo: GhRepoResponse): DatalabFile {
     const type = DatalabFileType.DIRECTORY;
     const icon = Utils.getItemIconString(type);
-    return new GithubFile({
-      icon,
-      id: new DatalabFileId(repo.full_name, FileManagerType.GITHUB),
-      name: repo.name,
-      status: DatalabFileStatus.IDLE,
-      type,
-    } as DatalabFile);
+    const file = new GithubFile();
+    file.id = new DatalabFileId(repo.full_name, FileManagerType.GITHUB),
+    file.icon = icon;
+    file.name = repo.name,
+    file.type = type;
+    return file;
   }
 
   private _ghDirEntryToDatalabFile(file: GhDirEntryResponse): DatalabFile {
@@ -252,13 +233,12 @@ class GithubFileManager implements FileManager {
     const pathParts = file.url.split('/');
     const prefix = pathParts.slice(4, 6).join('/'); // user and project
     const path = prefix + '/' + file.path;
-    return new GithubFile({
-      icon,
-      id: new DatalabFileId(path, FileManagerType.GITHUB),
-      name: file.name,
-      status: DatalabFileStatus.IDLE,
-      type,
-    } as DatalabFile);
+    const githubFile = new GithubFile();
+    githubFile.id = new DatalabFileId(path, FileManagerType.GITHUB);
+    githubFile.icon = icon;
+    githubFile.name = file.name;
+    githubFile.type = type;
+    return githubFile;
   }
 
   private _ghFileToDatalabFile(file: GhFileResponse): DatalabFile {
@@ -268,17 +248,17 @@ class GithubFileManager implements FileManager {
     const pathParts = file.url.split('/');
     const prefix = pathParts.slice(4, 6).join('/'); // user and project
     const path = prefix + '/' + file.path;
-    return new GithubFile({
-      icon,
-      id: new DatalabFileId(path, FileManagerType.GITHUB),
-      name: file.name,
-      status: DatalabFileStatus.IDLE,
-      type,
-    } as DatalabFile);
+    const githubFile = new GithubFile();
+    githubFile.icon = icon;
+    githubFile.id = new DatalabFileId(path, FileManagerType.GITHUB);
+    githubFile.name = file.name;
+    githubFile.status = DatalabFileStatus.IDLE;
+    githubFile.type = type;
+    return githubFile;
   }
 
   private _ghFileToContentString(file: GhFileResponse): string {
-    if (file.encoding != 'base64') {
+    if (file.encoding !== 'base64') {
       throw new Error('github file encoding "' + file.encoding +
         '" is not supported');
     }
