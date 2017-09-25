@@ -16,9 +16,11 @@
 /// <reference path="../../../third_party/externs/ts/request/request.d.ts" />
 /// <reference path="common.d.ts" />
 
+import tls = require('tls');
 import auth = require('./auth')
 import fs = require('fs');
 import health = require('./health');
+import https = require('https');
 import http = require('http');
 import info = require('./info');
 import jupyter = require('./jupyter');
@@ -40,7 +42,7 @@ import wsHttpProxy = require('./wsHttpProxy');
 import backupUtility = require('./backupUtility');
 import childProcess = require('child_process');
 
-var server: http.Server;
+var server: https.Server;
 var metadataHandler: http.RequestHandler;
 var healthHandler: http.RequestHandler;
 var infoHandler: http.RequestHandler;
@@ -332,7 +334,7 @@ function trimBasePath(requestPath: string): string {
 function requestHandler(request: http.ServerRequest, response: http.ServerResponse) {
   request.url = trimBasePath(request.url);
   idleTimeout.resetBasedOnPath(request.url);
-  response.setHeader('Access-Control-Allow-Origin', 'http://localhost:8081');
+  response.setHeader('Access-Control-Allow-Origin', 'https://localhost:8081');
   response.setHeader('Access-Control-Allow-Credentials', 'true');
   response.setHeader('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST, PATCH');
   response.setHeader('Access-Control-Allow-Headers', 'Origin, Cache-Control, X-Requested-With, Content-Type, Accept, Cache-Control');
@@ -366,11 +368,19 @@ export function run(settings: common.AppSettings): void {
   fileSearchHandler = fileSearch.createHandler(appSettings);
   timeoutHandler = idleTimeout.createHandler();
 
-  server = http.createServer(requestHandler);
+  const keyPath = path.join(__dirname, 'config', 'dummy.key');
+  const certPath = path.join(__dirname, 'config', 'dummy.cert');
+  const key = fs.readFileSync(keyPath).toString();
+  const certificate = fs.readFileSync(certPath).toString();
+  const secureOptions = {
+    key: key,
+    cert: certificate,
+  };
+  server = https.createServer(secureOptions, requestHandler);
   server.on('upgrade', socketHandler);
 
   if (settings.allowHttpOverWebsocket) {
-    new wsHttpProxy.WsHttpProxy(server, httpOverWebSocketPath, settings.allowOriginOverrides);
+    new wsHttpProxy.WsHttpProxy((server as any), httpOverWebSocketPath, settings.allowOriginOverrides);
   }
 
   logging.getLogger().info('Starting DataLab server at http://localhost:%d%s',
