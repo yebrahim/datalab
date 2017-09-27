@@ -195,7 +195,7 @@ class ApiManager implements ApiManager {
     const params = options.parameters;
     const successCodes = options.successCodes || [200];
     const request = new XMLHttpRequest();
-    const noCache = options.noCache || false;
+    // const noCache = options.noCache || false;
     const failureCodes = options.failureCodes;
     const headers = options.headers;
 
@@ -244,9 +244,9 @@ class ApiManager implements ApiManager {
           request.setRequestHeader(k, headers[k]);
         }
       }
-      if (noCache) {
-        request.setRequestHeader('Cache-Control', 'no-cache');
-      }
+      // if (noCache) {
+      //   request.setRequestHeader('Cache-Control', 'no-cache');
+      // }
       request.send(params);
     });
   }

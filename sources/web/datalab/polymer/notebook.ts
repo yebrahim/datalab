@@ -94,6 +94,6 @@ if (params.has('file')) {
   // open file, for example in the case of Jupyter files where the id is the file path.
   if (iframe) {
     window.top.addEventListener('message', processMessageEvent);
-    iframe.src = '/notebookeditor#fileId=' + params.get('file');
+    iframe.src = '/notebookeditor#fileId=' + params.get('file') + '&' + location.hash.slice(1);
   }
 }

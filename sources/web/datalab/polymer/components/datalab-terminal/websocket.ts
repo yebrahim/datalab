@@ -41,7 +41,9 @@ class DatalabWebSocketShim {
 
     ApiManager.getBasePath()
       .then((basepath: string) => {
-        const socketUri = location.protocol + '//' + location.host + '/session';
+        // const socketUri = location.protocol + '//' + location.host + '/session';
+        const socketUri = basepath + '/session';
+        basepath = '';
         const socketOptions: SocketIOClient.ConnectOpts = {
           multiplex: false,
           path: basepath + '/socket.io',
