@@ -334,13 +334,14 @@ function trimBasePath(requestPath: string): string {
 function requestHandler(request: http.ServerRequest, response: http.ServerResponse) {
   request.url = trimBasePath(request.url);
   idleTimeout.resetBasedOnPath(request.url);
-  response.setHeader('Access-Control-Allow-Origin', 'https://localhost:8081');
-  response.setHeader('Access-Control-Allow-Credentials', 'true');
-  response.setHeader('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST, PATCH');
-  response.setHeader('Access-Control-Allow-Headers', 'Origin, Cache-Control, X-Requested-With, Content-Type, Accept, Cache-Control');
 
   try {
     uncheckedRequestHandler(request, response);
+    response.setHeader('Access-Control-Allow-Origin', 'https://localhost:8081');
+    response.setHeader('Access-Control-Allow-Credentials', 'true');
+    response.setHeader('Access-Control-Allow-Methods', 'DELETE, PUT, GET, POST, PATCH');
+    response.setHeader('Access-Control-Allow-Headers', 'Origin, Cache-Control, X-Requested-With, Content-Type, Accept, Cache-Control');
+    response.setHeader('Cache-Control', 'no-cache');
   } catch (e) {
     logging.getLogger().error('Uncaught error handling a request to "%s": %s', request.url, e);
   }
