@@ -15,9 +15,9 @@ the License.
 <link rel="import" href="../../bower_components/app-route/app-location.html">
 <link rel="import" href="../../bower_components/app-route/app-route.html">
 <link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/paper-tabs/paper-tabs.html">
 
 <link rel="import" href="../../components/datalab-notification/datalab-notification.html">
-<link rel="import" href="../../components/datalab-sidebar/datalab-sidebar.html">
 <link rel="import" href="../../components/datalab-toolbar/datalab-toolbar.html">
 <link rel="import" href="../../components/resizable-divider/resizable-divider.html">
 <link rel="import" href="../../modules/api-manager/api-manager.html">
@@ -38,13 +38,20 @@ the License.
       datalab-toolbar {
         flex: 0 0 var(--toolbar-height);
       }
+      #tabs {
+        height: 48px;
+        color: #fff;
+        background-color: var(--primary-accent-color);
+        box-shadow: 0 4px 5px -1px #aaa;
+        z-index: 1;
+        --paper-tabs-selection-bar-color: #fff;
+      }
+      #tabs > paper-tab {
+        min-width: 70px;
+      }
       .datalab-contents {
         display: flex;
         flex: 1 1 auto;
-      }
-      .datalab-sidebar {
-        flex: 0 0 var(--sidebar-width);
-        transition: flex-basis var(--app-animation-duration);
       }
       .datalab-main-content {
         flex: 1 1 auto;
@@ -59,11 +66,6 @@ the License.
       .page {
         height: 100%;
       }
-      @media only screen and (max-width: 800px) {
-        .datalab-sidebar {
-          flex-basis: var(--collapsed-sidebar-width);
-        }
-      }
     </style>
 
     <!--Router-->
@@ -76,8 +78,14 @@ the License.
 
     <div id="container">
       <datalab-toolbar></datalab-toolbar>
+      <paper-tabs id="tabs" selected="{{page}}" attr-for-selected="name" scrollable>
+        <paper-tab name="files">Files</paper-tab>
+        <paper-tab name="data">Data</paper-tab>
+        <paper-tab name="sessions">Sessions</paper-tab>
+        <paper-tab name="terminal">Terminal</paper-tab>
+        <paper-tab name="docs">Docs</paper-tab>
+      </paper-tabs>
       <div class="datalab-contents">
-        <datalab-sidebar class="datalab-sidebar" page={{page}}></datalab-sidebar>
         <div class="datalab-main-content">
           <iron-pages id="pages" selected="{{page}}" attr-for-selected="name">
             <!-- Elements here must implement the DatalabPageElement interface -->

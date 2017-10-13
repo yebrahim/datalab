@@ -16,11 +16,10 @@
 
 /**
  * Shell element for Datalab.
- * It contains a <datalab-toolbar> element at the top, a <datalab-sidebar>
- * element beneath that to the left, and a paged view to switch between
- * different pages. It holds references to the different datalab page
- * elements, and uses a local router element to switch between
- * these according to the current page location.
+ * It contains a <datalab-toolbar> element at the top, and a paged view to
+ * switch between different pages. It holds references to the different datalab
+ * page elements, and uses a local router element to switch between these
+ * according to the current page location.
  * All pages referenced by this element should be named following the
  * convention `datalab-element/datalab-element.html`.
  */
@@ -35,6 +34,8 @@ class DatalabAppElement extends Polymer.Element {
    * Current displayed page name
    */
   public page: string;
+
+  public route: object;
 
   /**
    * Current matching result from the window.location. This gets re-evaluated
@@ -149,6 +150,7 @@ class DatalabAppElement extends Polymer.Element {
    */
   _pageChanged(newPage: string, oldPage: string) {
     if (newPage) {
+      this.set('routeData.page', newPage);
       // Lazy load the requested page. Build the path using the page's element
       // name.
       const newElement = this._getPageElement(newPage);
