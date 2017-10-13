@@ -21,6 +21,7 @@ class MissingClientIdError extends Error {
 
 enum GapiScopes {
   BIGQUERY,
+  CLOUD_PLATFORM,
   DRIVE,
   GCS,
 }
@@ -410,6 +411,7 @@ class GapiManager {
     return gapi.auth2.init({
       client_id: GapiManager._clientId,
       fetch_basic_profile: true,
+      redirect_uri: Utils.getHostRoot(),
       scope: initialScopeString,
       ux_mode: 'redirect',
     })
@@ -468,6 +470,8 @@ class GapiManager {
     switch (scope) {
       case GapiScopes.BIGQUERY:
         return 'https://www.googleapis.com/auth/bigquery';
+      case GapiScopes.CLOUD_PLATFORM:
+        return 'https://www.googleapis.com/auth/cloud-platform';
       case GapiScopes.DRIVE:
         return ['https://www.googleapis.com/auth/drive',
                 'https://www.googleapis.com/auth/drive.appfolder',

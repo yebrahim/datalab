@@ -152,9 +152,17 @@ class ItemClickEvent extends CustomEvent {
 class ItemListElement extends Polymer.Element {
 
   /**
-   * List of data rows, each implementing the row interface
+   * Initial list of data rows, each implementing the row interface. This list will
+   * potentially grow as the user scrolls by calling the loadMoreData function if
+   * it was assigned.
    */
   public rows: ItemListRow[];
+
+  /**
+   * Function to load more data. This will be called each time the user scrolls
+   * near the end of the current list.
+   */
+  public loadMoreData: (offset: number, pageSize: number) => ItemListRow[];
 
   /**
    * List of string data columns names
@@ -208,6 +216,7 @@ class ItemListElement extends Polymer.Element {
         value: InlineDetailsDisplayMode.NONE,
       },
       rows: {
+        observer: '_rowsChanged',
         type: Array,
         value: () => [],
       },
@@ -224,13 +233,26 @@ class ItemListElement extends Polymer.Element {
     super.ready();
 
     // Add box-shadow to header container on scroll
-    const container = this.$.listContainer as HTMLDivElement;
+    const container = this.$.scrollThreshold as HTMLDivElement;
     const headerContainer = this.$.headerContainer as HTMLDivElement;
     container.addEventListener('scroll', () => {
       const yOffset = Math.min(container.scrollTop / 5, 5);
       const shadow = '0px ' + yOffset + 'px 10px -3px #ccc';
       headerContainer.style.boxShadow = shadow;
     });
+  }
+
+  _rowsChanged() {
+    // Clear the scroll threshold triggers to start watching the newly resized list.
+    this.$.scrollThreshold.clearTriggers();
+  }
+
+  _loadMoreData() {
+    if (this.loadMoreData) {
+      const moreRows = this.loadMoreData(this.rows.length, 50);
+      this.push('rows', ...moreRows);
+      this._rowsChanged();
+    }
   }
 
   /**
@@ -396,7 +418,7 @@ class ItemListElement extends Polymer.Element {
 
   private _getRowDetailsContainer(index: number) {
     const nthDivSelector = 'div.row-details:nth-of-type(' + (index + 1) + ')';
-    return this.$.listContainer.querySelector(nthDivSelector);
+    return this.$.scrollThreshold.querySelector(nthDivSelector);
   }
 
 }

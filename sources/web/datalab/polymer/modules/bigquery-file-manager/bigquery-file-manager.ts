@@ -164,15 +164,15 @@ class BigQueryFileManager extends BaseFileManager {
         await GapiManager.bigquery.listProjects(pageToken);
     const additionalProjects = response.result.projects || [];
     const projects = accumulatedProjects.concat(additionalProjects);
-    if (response.result.nextPageToken) {
-      return this._collectAllProjects(projects, response.result.nextPageToken);
-    } else {
-      projects.sort((a: ProjectResource, b: ProjectResource) => {
-        return a.projectReference.projectId.localeCompare(b.projectReference.projectId);
-      });
-      return projects.map(
-          this._bqProjectToDatalabFile.bind(this)) as DatalabFile[];
-    }
+    // if (response.result.nextPageToken) {
+    //   return this._collectAllProjects(projects, response.result.nextPageToken);
+    // } else {
+    projects.sort((a: ProjectResource, b: ProjectResource) => {
+      return a.projectReference.projectId.localeCompare(b.projectReference.projectId);
+    });
+    return projects.map(
+        this._bqProjectToDatalabFile.bind(this)) as DatalabFile[];
+    // }
   }
 
   private async _collectAllDatasets(projectId: string,

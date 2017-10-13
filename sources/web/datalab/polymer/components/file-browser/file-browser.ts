@@ -490,27 +490,34 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     }
   }
 
+  _fileToItemListRow(file: DatalabFile) {
+    const createDetailsPaneFromFile = (f: DatalabFile) => {
+      const detailsPane = document.createElement('inline-details-pane'
+          ) as InlineDetailsPaneElement;
+      detailsPane.file = f;
+      return detailsPane;
+    };
+    const createDetailsElement = file.getInlineDetailsName() ?
+        () => createDetailsPaneFromFile(file) : undefined;
+    const row = new ItemListRow({
+        columns: [file.name, Utils.getFileStatusString(file.status || DatalabFileStatus.IDLE)],
+        createDetailsElement,
+        icon: file.icon,
+    });
+    return row;
+  }
+
   /**
    * Creates a new ItemListRow object for each entry in the file list, and sends
    * the created list to the item-list to render.
    */
   _drawFileList() {
-    const createDetailsPaneFromFile = (file: DatalabFile) => {
-      const detailsPane = document.createElement('inline-details-pane'
-          ) as InlineDetailsPaneElement;
-      detailsPane.file = file;
-      return detailsPane;
+    const itemList = (this.$.files as ItemListElement);
+    itemList.rows = this._fileList.slice(0, 50).map(this._fileToItemListRow.bind(this));
+    itemList.loadMoreData = (offset: number, pageSize: number) => {
+      return this._fileList.slice(offset, offset + pageSize)
+                           .map(this._fileToItemListRow.bind(this));
     };
-    (this.$.files as ItemListElement).rows = this._fileList.map((file) => {
-      const createDetailsElement = file.getInlineDetailsName() ?
-          () => createDetailsPaneFromFile(file) : undefined;
-      const row = new ItemListRow({
-          columns: [file.name, Utils.getFileStatusString(file.status || DatalabFileStatus.IDLE)],
-          createDetailsElement,
-          icon: file.icon,
-      });
-      return row;
-    });
   }
 
   /**

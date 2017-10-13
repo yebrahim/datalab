@@ -16,6 +16,7 @@ the License.
 
 <link rel="import" href="../../bower_components/iron-icons/editor-icons.html">
 <link rel="import" href="../../bower_components/iron-icons/hardware-icons.html">
+<link rel="import" href="../../bower_components/iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 
@@ -41,10 +42,6 @@ the License.
         display: flex;
         line-height: calc(var(--toolbar-height) - 1px);
         border-bottom: 1px solid var(--border-color);
-      }
-      #listContainer {
-        flex: 1 1 auto;
-        overflow: auto;
       }
       .row {
         user-select: none;
@@ -116,7 +113,7 @@ the License.
     </div>
 
     <!--Item list-->
-    <div id="listContainer">
+    <iron-scroll-threshold id="scrollThreshold" on-lower-threshold="_loadMoreData">
       <template is="dom-repeat" id="list" items="{{rows}}" as="row">
         <paper-item class="row" selected$={{row.selected}} on-click="_rowClicked"
                     on-dblclick="_rowDoubleClicked">
@@ -133,7 +130,7 @@ the License.
         </paper-item>
         <div id="details" class="row-details" hidden$="{{!row.showInlineDetails}}"></div>
       </template>
-    </div>
+    </iron-scroll-threshold>
 
   </template>
 </dom-module>

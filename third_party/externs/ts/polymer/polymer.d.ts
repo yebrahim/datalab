@@ -77,7 +77,7 @@ declare module Polymer {
       type: "splice";
     }[]): void;
     pop(path: string): any;
-    push(path: string, value: any): any;
+    push(path: string, ...value: any[]): any;
     reflectPropertyToAttribute(name: string): void;
     resolveUrl(url: string, base?: string): any;
     scopeSubtree(container: Element, shouldObserve: boolean): void;
