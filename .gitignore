@@ -25,4 +25,8 @@ test/ui/broken
 experimental
 polymer_bundled
 polymer_unbundled
-sources/web/datalab/polymer/**/*.js
+sources/web/datalab/polymer/components/**/*.js
+sources/web/datalab/polymer/modules/**/*.js
+sources/web/datalab/polymer/test/**/*.js
+sources/web/datalab/polymer/editor.js
+sources/web/datalab/polymer/notebook.js

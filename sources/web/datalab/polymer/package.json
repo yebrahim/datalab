@@ -8,7 +8,7 @@
     "pretranspile": "tslint *.ts components/**/*.ts modules/**/*.ts",
     "transpile": "tsc",
     "prebuild": "npm install && bower --allow-root install",
-    "build": "npm run transpile && polymer build",
+    "build": "npm run transpile && gulp",
     "test": "tsc && polymer test"
   },
   "devDependencies": {
@@ -17,6 +17,17 @@
     "@types/gapi.auth2": "0.0.42",
     "@types/mocha": "^2.2.41",
     "@types/socket.io-client": "^1.4.30",
+    "css-slam": "^2.0.2",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-html-minifier": "^0.1.8",
+    "gulp-if": "^2.0.2",
+    "gulp-polymer-build-utils": "^1.4.7",
+    "gulp-uglifyes": "^0.1.2",
+    "merge-stream": "^1.0.1",
+    "polymer-analyzer": "^2.3.0",
+    "polymer-build": "^2.1.0",
+    "run-sequence": "^2.2.0",
     "tslint": "^5.7.0",
     "typescript": "^2.5.3"
   }
