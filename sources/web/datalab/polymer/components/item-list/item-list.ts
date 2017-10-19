@@ -299,10 +299,12 @@ class ItemListElement extends Polymer.Element {
   _updateItemSelection(index: number, newValue: boolean) {
     const multipleSelected = this.selectedIndices.length > 1;
     const rowDetailsElement = this._getRowDetailsContainer(index);
-    this.rows[index]._updateInlineDetails(
-        this.inlineDetailsMode, multipleSelected, rowDetailsElement);
-    this.notifyPath('rows.' + index + '.showInlineDetails',
-        this.rows[index].showInlineDetails);
+    if (rowDetailsElement) {
+      this.rows[index]._updateInlineDetails(
+          this.inlineDetailsMode, multipleSelected, rowDetailsElement);
+      this.notifyPath('rows.' + index + '.showInlineDetails',
+          this.rows[index].showInlineDetails);
+    }
     const previousSelectedCount =
         this.selectedIndices.length + (newValue ? -1 : 1);
     const previousMultipleSelected = previousSelectedCount > 1;
@@ -362,7 +364,7 @@ class ItemListElement extends Polymer.Element {
       return;
     }
     const target = e.target as HTMLDivElement;
-    const index = this.$.list.indexForElement(target);
+    const index = this.$.list.modelForElement(target).index;
 
     // If shift key is pressed and we had saved the last selected index, select
     // all items from this index till the last selected.
@@ -410,8 +412,8 @@ class ItemListElement extends Polymer.Element {
    * On row double click, fires an event with the clicked item's index.
    */
   _rowDoubleClicked(e: MouseEvent) {
-    const index = this.$.list.indexForElement(e.target);
-    const ev = new ItemClickEvent('itemDoubleClick', { detail: {index} });
+    const model = this.$.list.modelForElement(e.target);
+    const ev = new ItemClickEvent('itemDoubleClick', { detail: {index: model.index} });
     this.dispatchEvent(ev);
   }
 
