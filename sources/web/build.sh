@@ -44,11 +44,11 @@ mkdir -p $WEB_DIR
 # Experimental UI build step
 cd datalab/polymer
 if [[ $DEBUG == 1 ]]; then
-  npm run build -- unbundled
+  gulp unbundled
   rsync -avpq ./build/polymer_unbundled/ ../static/experimental
 else
+  gulp bundled
   echo "Using bundled polymer resources.."
-  npm run build -- bundled
   rsync -avpq ./build/polymer_bundled/ ../static/experimental
 fi
 cd ../..
