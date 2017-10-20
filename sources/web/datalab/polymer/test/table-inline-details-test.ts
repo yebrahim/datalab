@@ -57,8 +57,8 @@ describe('<table-inline-details>', () => {
   };
 
   const mockTabledata: ListTabledataResponse = {
-    kind: 'bigquery#tableDataList',
     etag: 'x',
+    kind: 'bigquery#tableDataList',
     pageToken: '',
     rows: [
       {f: [{ v: 'r1f1' }, { v: 'r1f2' }]},

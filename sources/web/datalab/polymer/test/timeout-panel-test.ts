@@ -62,7 +62,7 @@ describe('<timeout-panel>', () => {
   it('shows the disabled icon after being disabled', (done: () => void) => {
     let timeoutEnabled = true;
     TimeoutManager.getTimeout = () => {
-      const timeoutInfo = timeoutEnabled? mockTimeoutInfo : mockTimeoutDisabledInfo;
+      const timeoutInfo = timeoutEnabled ? mockTimeoutInfo : mockTimeoutDisabledInfo;
       return Promise.resolve(timeoutInfo);
     };
     TimeoutManager.setTimeoutEnabled = (enabled: boolean) => {
@@ -85,7 +85,7 @@ describe('<timeout-panel>', () => {
   it('shows "disabled" text when disabled', (done: () => void) => {
     let timeoutEnabled = true;
     TimeoutManager.getTimeout = () => {
-      const timeoutInfo = timeoutEnabled? mockTimeoutInfo : mockTimeoutDisabledInfo;
+      const timeoutInfo = timeoutEnabled ? mockTimeoutInfo : mockTimeoutDisabledInfo;
       return Promise.resolve(timeoutInfo);
     };
     TimeoutManager.setTimeoutEnabled = (enabled: boolean) => {
@@ -94,7 +94,7 @@ describe('<timeout-panel>', () => {
     };
     Date.now = () => {
       return mockDateNow;
-    }
+    };
     testFixture.onOpenChange(true).then(() => {
       const enabledIcon = testFixture.$.timeoutControls.querySelector('#timeoutEnabledIcon') as HTMLElement;
       enabledIcon.click(); // disable the timer
@@ -113,7 +113,7 @@ describe('<timeout-panel>', () => {
     };
     Date.now = () => {
       return mockDateNow;
-    }
+    };
     testFixture.onOpenChange(true).then(() => {
       Polymer.dom.flush();
       assert(testFixture.$.timeoutText.innerHTML === 'Idle timeout in about 10m', 'Timeout line should show info');
