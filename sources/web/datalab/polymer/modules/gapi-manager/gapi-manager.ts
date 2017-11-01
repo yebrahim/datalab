@@ -478,7 +478,7 @@ class GapiManager {
   private static _loadClientIdFromAppSettings(): Promise<string> {
     return SettingsManager.getAppSettingsAsync()
       .then((settings: common.AppSettings) => {
-        return settings.oauth2ClientId;
+        return settings.oauth2ClientId || '';
       })
       .catch(() => {
         return '';

@@ -78,8 +78,8 @@ class SettingsElement extends Polymer.Element {
     this._updateError = false;
     return SettingsManager.getUserSettingsAsync(true /*forceRefresh*/)
       .then((settings: common.UserSettings) => {
-        this.theme = settings.theme;
-        this.idleTimeoutInterval = settings.idleTimeoutInterval;
+        this.theme = settings.theme || '';
+        this.idleTimeoutInterval = settings.idleTimeoutInterval || '';
       })
       .catch(() => {
         Utils.log.error('Could not get user settings from server.');

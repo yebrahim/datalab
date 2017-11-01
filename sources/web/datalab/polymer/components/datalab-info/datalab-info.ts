@@ -34,7 +34,7 @@ class InfoElement extends Polymer.Element {
     super.ready();
 
     SettingsManager.getAppSettingsAsync()
-      .then((settings: common.AppSettings) => this.version = settings.versionId);
+      .then((settings: common.AppSettings) => this.version = settings.versionId || '');
   }
 
 }

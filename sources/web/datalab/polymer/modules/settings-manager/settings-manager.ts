@@ -47,7 +47,7 @@ class SettingsManager {
    * Returns the app settings object, optionally after refreshing it from the backend
    * @param forceRefresh whether the settings cache should be refreshed before returning
    */
-  public static getAppSettingsAsync(forceRefresh?: boolean) {
+  public static getAppSettingsAsync(forceRefresh?: boolean): Promise<common.AppSettings> {
     if (!appSettings || forceRefresh === true) {
       return SettingsManager._getAppSettingsAsync()
         .then((settings: common.AppSettings) => {
@@ -97,8 +97,8 @@ class SettingsManager {
       .then((settings: common.AppSettings) => {
         if (settings.configUrl) {
           return new Promise((resolve, reject) => {
-            const configScript = document.createElement('script');
-            configScript.src = settings.configUrl;
+            const configScript = document.createElement('script') as HTMLScriptElement;
+            configScript.src = settings.configUrl || '';
             configScript.onload = () => {
               resolve();
             };

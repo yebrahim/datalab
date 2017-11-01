@@ -42,7 +42,7 @@ describe('SettingsManager', () => {
 
     it('loads and appends the file specified by appSettings.configUrl', (done: () => void) => {
       let documentHeadCalled = false;
-      const fakeAppSettings = {
+      const fakeAppSettings: common.AppSettings = {
         configUrl: '/fake/config/url/path'
       };
       SettingsManager.getAppSettingsAsync = (_?: boolean) => {
@@ -54,7 +54,7 @@ describe('SettingsManager', () => {
           assert(script.src.endsWith('/fake/config/url/path'),
               'script element should have the expected src');
           documentHeadCalled = true;
-          const fakeEvent = document.createEvent("Event");
+          const fakeEvent = document.createEvent('Event');
           script.onload(fakeEvent); // Resolve our promise
         }
         return element;

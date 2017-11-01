@@ -27,31 +27,31 @@ class MockFile extends DatalabFile {
 
 class MockFileManager extends BaseFileManager {
   public async getRootFile() {
-    return new MockFile('root');
+    return new MockFile('', '/');
   }
-  public pathToPathHistory(path: string): DatalabFile[] {
-    return [new MockFile('', path)];
+  public pathToPathHistory(_: string): DatalabFile[] {
+    return [
+      new MockFile('mock', 'mock'),
+      new MockFile('file', 'file'),
+      new MockFile('path', 'path'),
+    ];
   }
 }
 
 describe('<file-browser>', () => {
   let testFixture: FileBrowserElement;
-  const startuppath = new DatalabFileId('testpath', FileManagerType.MOCK);
 
   const mockFiles = [
     new MockFile('file1'),
     new MockFile('file2'),
     new MockFile('file3'),
   ];
+  const fileManagerSetting = 'mock';
 
   before(() => {
-    SettingsManager.getUserSettingsAsync = (forceRefresh: boolean) => {
-      assert(forceRefresh === true, 'file-browser should refresh settings on load');
-      const mockSettings: common.UserSettings = {
-        idleTimeoutInterval: '',
-        idleTimeoutShutdownCommand: '',
-        startuppath: startuppath.path,
-        theme: 'light',
+    SettingsManager.getAppSettingsAsync = () => {
+      const mockSettings: common.AppSettings = {
+        defaultFileManager: fileManagerSetting,
       };
       return Promise.resolve(mockSettings);
     };
@@ -67,10 +67,20 @@ describe('<file-browser>', () => {
     };
     FileManagerFactory.getInstance = () => mockFileManager;
     FileManagerFactory.getInstanceForType = (_) => mockFileManager;
+    FileManagerFactory.fileManagerNameToType = (_) => FileManagerType.MOCK;
+    FileManagerFactory.getFileManagerConfig = (_) => {
+      return {
+        displayIcon: 'mockIcon',
+        displayName: 'mock',
+        name: 'mock',
+        path: '',
+        typeClass: MockFileManager,
+      };
+    };
   });
 
   beforeEach((done: () => any) => {
-    testFixture = fixture('files-fixture');
+    testFixture = fixture('file-browser-fixture');
     testFixture.ready()
       .then(() => {
         Polymer.dom.flush();
@@ -78,9 +88,18 @@ describe('<file-browser>', () => {
       });
   });
 
-  it('gets the startup path correctly', () => {
-    assert(JSON.stringify(testFixture.currentFile.id) === JSON.stringify(startuppath),
-        'incorrect startup path');
+  it('uses the file manager specified in app settings', () => {
+    assert(testFixture.fileManagerType === fileManagerSetting,
+        'FileManager type should be ' + fileManagerSetting);
+  });
+
+  it('loads the root path and breadcrumbs correctly', () => {
+    assert(testFixture.$.breadCrumbs.crumbs.length === 0,
+        'breadcrumbs should only contain the root "/" character');
+  });
+
+  it('gets the current file correctly', () => {
+    assert(testFixture.currentFile.id.path === '/', 'current file should be root');
   });
 
   it('displays list of files correctly', () => {

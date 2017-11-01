@@ -109,7 +109,7 @@ class DatalabAppElement extends Polymer.Element {
     window.addEventListener('focus', () => this.focusHandler());
 
     const settings = await SettingsManager.getAppSettingsAsync();
-    this._fileBrowserSources = settings.supportedFileBrowserSources;
+    this._fileBrowserSources = settings.supportedFileBrowserSources || [];
   }
 
   /**
