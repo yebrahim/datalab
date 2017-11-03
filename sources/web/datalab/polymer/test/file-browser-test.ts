@@ -32,6 +32,9 @@ class MockFileManager extends BaseFileManager {
   public pathToPathHistory(path: string): DatalabFile[] {
     return [new MockFile('', path)];
   }
+  public getExternalUrl(_: DatalabFileId) {
+    return '';
+  }
 }
 
 describe('<file-browser>', () => {
