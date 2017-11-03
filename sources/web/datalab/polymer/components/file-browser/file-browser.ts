@@ -84,8 +84,9 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
   _canOpenInNotebook = false;
   _canPreview = false;
   _fetching: boolean; // Indicates the file list is being fetched and updated
-  _fileManagerDisplayName: string;
   _fileManagerDisplayIcon: string;
+  _fileManagerDisplayName: string;
+  _showExternalOpenMessage = false;
 
   private _addToolbarCollapseThreshold = 900;
   private _dividerPosition: number;
@@ -452,6 +453,8 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
     if (fetchFileId === this.currentFile.id) {
       this._fetching = false;
     }
+
+    this._showExternalOpenMessage = !!this._fileManager.getExternalUrl(this.currentFile.id);
   }
 
   /**
@@ -1102,6 +1105,10 @@ class FileBrowserElement extends Polymer.Element implements DatalabPageElement {
       clearInterval(this._fileListRefreshIntervalHandle);
       this._fileListRefreshIntervalHandle = 0;
     }
+  }
+
+  _openExternalService() {
+    window.open(this._fileManager.getExternalUrl(this.currentFile.id));
   }
 
   private async _loadStartupPath(fileId: DatalabFileId|null) {

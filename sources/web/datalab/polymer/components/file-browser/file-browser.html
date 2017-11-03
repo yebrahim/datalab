@@ -130,6 +130,24 @@ the License.
       #breadCrumbs {
         flex: 1 1 auto;
       }
+      #list-pane {
+        display: flex;
+        flex-direction: column;
+      }
+      #bottom-message {
+        padding: 3px 10px;
+        font-size: 11px;
+        color: #999;
+        background-color: var(--secondary-bg-color);
+        border-top: solid 1px var(--border-color);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      #bottom-message > paper-button {
+        color: var(--selection-fg-color);
+        font-weight: bold;
+      }
     </style>
 
     <div id="toolbar" hidden$="{{_isToolbarHidden}}">
@@ -273,9 +291,18 @@ the License.
           divider-position="{{_dividerPosition}}"
           disable-right="{{small}}"
           hide-right="{{!_isPreviewPaneToggledOn}}">
-        <item-list id="files" slot="left" hide-header$="{{small}}" disable-selection$="{{small}}"></item-list>
-        <preview-pane id="previewPane" slot="right" file="{{selectedFile}}" active="{{_isPreviewPaneEnabled}}"
-                      class$="preview-pane-enabled--{{_isPreviewPaneEnabled}}">
+        <div id="list-pane" slot="left">
+          <item-list id="files" hide-header$="{{small}}" disable-selection$="{{small}}">
+          </item-list>
+          <div id="bottom-message" hidden$="[[!_showExternalOpenMessage]]">
+            Only showing supported files.
+            <paper-button on-click="_openExternalService">
+              Open in [[_fileManager.serviceName]]
+            </paper-button>
+          </div>
+        </div>
+        <preview-pane id="previewPane" class$="preview-pane-enabled--{{_isPreviewPaneEnabled}}"
+                      slot="right" file="{{selectedFile}}" active="{{_isPreviewPaneEnabled}}">
         </preview-pane>
       </resizable-divider>
     </div>

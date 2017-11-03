@@ -28,9 +28,15 @@ class DriveFileManager extends BaseFileManager {
   private static readonly _directoryMimeType = 'application/vnd.google-apps.folder';
   private static readonly _notebookMimeType = 'application/json';
 
+  serviceName = 'Drive';
+
   public async get(fileId: DatalabFileId): Promise<DatalabFile> {
     const upstreamFile = await GapiManager.drive.getFile(fileId.path);
     return this._fromUpstreamFile(upstreamFile);
+  }
+
+  public getExternalUrl(fileId: DatalabFileId) {
+    return 'https://drive.google.com/corp/drive/folders/' + fileId;
   }
 
   public async getStringContent(fileId: DatalabFileId, _asText?: boolean): Promise<string> {

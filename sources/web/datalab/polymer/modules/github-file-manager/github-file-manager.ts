@@ -92,6 +92,8 @@ class GithubFileManager extends BaseFileManager {
 
   private static cache_ = new GithubCache();
 
+  serviceName = 'Github';
+
   public async get(fileId: DatalabFileId) {
     if (fileId.path === '' || fileId.path === '/') {
       return this._ghRootDatalabFile();
@@ -101,6 +103,13 @@ class GithubFileManager extends BaseFileManager {
         .then((response: GhFileResponse) => {
           return this._ghFileToDatalabFile(response);
         });
+  }
+
+  public getExternalUrl(fileId: DatalabFileId) {
+    const pathParts = fileId.path.split('/').filter((p) => !!p);
+    const repo = pathParts[0] + '/' + pathParts[1];
+    const path = pathParts.slice(2).join('/');
+    return `https://github.com/${repo}/tree/master/${path}`;
   }
 
   public async getStringContent(fileId: DatalabFileId, _asText?: boolean) {

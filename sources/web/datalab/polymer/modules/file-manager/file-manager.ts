@@ -132,10 +132,21 @@ interface FileManager {
   // one call.
 
   /**
+   * User-friendly name for the storage service backing this file manager.
+   */
+  serviceName: string;
+
+  /**
    * Returns a DatalabFile object representing the file or directory requested
    * @param fileId id of the requested file.
    */
   get(fileId: DatalabFileId): Promise<DatalabFile>;
+
+  /**
+   * Returns the external URL of the given file id.
+   * @param fileId id of the file to open externally.
+   */
+  getExternalUrl(fileId: DatalabFileId): string;
 
   /**
    * Returns the string content of the file with the specified id.
@@ -220,8 +231,15 @@ interface FileManager {
  * functionality for the different FileManager classes.
  */
 class BaseFileManager implements FileManager {
+
+  serviceName = '';
+
   get(_fileId: DatalabFileId): Promise<DatalabFile> {
     throw new UnsupportedMethod('get', this);
+  }
+
+  getExternalUrl(_fileId: DatalabFileId): string {
+    throw new UnsupportedMethod('getExternalUrl', this);
   }
 
   getStringContent(_fileId: DatalabFileId, _asText?: boolean): Promise<string> {

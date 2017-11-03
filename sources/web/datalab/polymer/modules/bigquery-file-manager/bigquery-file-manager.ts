@@ -40,11 +40,26 @@ class BigQueryFile extends DatalabFile {
  * datasets, and tables like a filesystem.
  */
 class BigQueryFileManager extends BaseFileManager {
+  serviceName = 'BigQuery';
+
   public get(fileId: DatalabFileId): Promise<DatalabFile> {
     if (fileId.path === '/') {
       return Promise.resolve(this._bqRootDatalabFile());
     }
     throw new UnsupportedMethod('get', this);
+  }
+
+  public getExternalUrl(fileId: DatalabFileId) {
+    const pathParts = fileId.path.split('/').filter((part) => !!part);
+    let url = 'https://bigquery.cloud.google.com/';
+    if (pathParts.length === 1) {
+      url += 'project/' + pathParts[0];
+    } else if (pathParts.length === 2) {
+      url += 'dataset/' + pathParts[0] + ':' + pathParts[1];
+    } else {
+      throw new Error('Cannot parse ' + fileId.path);
+    }
+    return url;
   }
 
   public getStringContent(_fileId: DatalabFileId, _asText?: boolean): Promise<string> {

@@ -46,6 +46,8 @@ class JupyterFile extends DatalabFile {
  */
 class JupyterFileManager extends BaseFileManager {
 
+  serviceName = 'Jupyter';
+
   /**
    * Converts the given JupyterFile into the type understood by the Jupyter
    * backend.
@@ -126,6 +128,10 @@ class JupyterFileManager extends BaseFileManager {
     return ApiManager.sendRequestAsync(
         ApiManager.getServiceUrl(ServiceId.CONTENT) + '/' + fileId.path, xhrOptions)
       .then((file: any) => JupyterFileManager._upstreamFileToJupyterFile(file));
+  }
+
+  public getExternalUrl(_fileId: DatalabFileId) {
+    return '';
   }
 
   public async getStringContent(fileId: DatalabFileId, asText?: boolean): Promise<string> {
